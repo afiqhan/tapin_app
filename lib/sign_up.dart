@@ -85,6 +85,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           MaterialPageRoute(builder: (context) => LoginPage()),
                         );
                       },
+
+                      
                       child: Text.rich(
                         TextSpan(
                           text: "Already have an account? ",
