@@ -1,0 +1,2 @@
+C:/Users/User/Documents/GitHub/tapin_app/android/app/.cxx/RelWithDebInfo/5l3622f2/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/User/Documents/GitHub/tapin_app/android/app/.cxx/RelWithDebInfo/5l3622f2/x86_64/CMakeFiles/rebuild_cache.dir

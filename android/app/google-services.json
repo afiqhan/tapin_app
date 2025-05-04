@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "733701309308",
+    "firebase_url": "https://tapin-e798d-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "tapin-e798d",
+    "storage_bucket": "tapin-e798d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:733701309308:android:e88cb6433317d37f221af9",
+        "android_client_info": {
+          "package_name": "com.example.tapin_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFqrSw9EgAxdJWwRR_Vz8aZa4VMzAxqZw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
