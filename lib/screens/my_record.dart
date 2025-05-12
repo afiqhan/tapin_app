@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyRecordPage extends StatefulWidget {
   const MyRecordPage({super.key});
@@ -33,6 +34,76 @@ class _MyRecordPageState extends State<MyRecordPage> {
     }
   }
 
+  void _showRemarkDialog(String recordKey, String recordDate) async {
+    TextEditingController _remarkController = TextEditingController();
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedRemark = prefs.getString('remark_$recordDate');
+    if (savedRemark != null) _remarkController.text = savedRemark;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Row(
+            children: [
+              Icon(Icons.edit_note, color: Colors.orange),
+              SizedBox(width: 8),
+              Text('Sebab Lewat'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Sila nyatakan sebab anda lewat hari ini:',
+                style: TextStyle(fontSize: 14),
+              ),
+              SizedBox(height: 12),
+              TextField(
+                controller: _remarkController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Contoh: Hujan lebat, jem teruk, masalah kereta...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Batal'),
+            ),
+            ElevatedButton.icon(
+              icon: Icon(Icons.save),
+              label: Text('Simpan'),
+              onPressed: () async {
+                final remark = _remarkController.text.trim();
+                if (remark.isNotEmpty) {
+                  // Simpan ke Firebase
+                  await _attendanceRef!
+                      .child(recordKey)
+                      .update({'remark': remark});
+                  // Simpan ke local storage
+                  await prefs.setString('remark_$recordDate', remark);
+
+                  Navigator.pop(context);
+                  // Optional: paparkan mesej berjaya
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Sebab Lewat telah disimpan.')),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _fetchRecords() {
     _attendanceRef?.onValue.listen((event) {
       if (event.snapshot.value != null) {
@@ -42,11 +113,13 @@ class _MyRecordPageState extends State<MyRecordPage> {
 
         data.forEach((key, record) {
           tempRecords.add({
+            "key": key, // ← inilah yang hilang
             "date": record["time"] ?? "-",
             "latitude": record["latitude"]?.toString() ?? "Unknown",
             "longitude": record["longitude"]?.toString() ?? "Unknown",
             "type": record["type"] ?? "Unknown",
             "status": record["status"] ?? "Unknown",
+            "remark": record["remark"] ?? "",
           });
         });
 
@@ -200,6 +273,23 @@ class _MyRecordPageState extends State<MyRecordPage> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if ((record["status"] == "Late") &&
+                                    (record["remark"] == null ||
+                                        record["remark"]!.isEmpty))
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: TextButton.icon(
+                                      icon: Icon(Icons.edit,
+                                          size: 18, color: Colors.purple),
+                                      label: Text("Tambah Sebab Lewat",
+                                          style:
+                                              TextStyle(color: Colors.purple)),
+                                      onPressed: () {
+                                        _showRemarkDialog(
+                                            record["key"]!, record["date"]!);
+                                      },
+                                    ),
+                                  ),
                                 Text("Latitude: ${record["latitude"]}"),
                                 Text("Longitude: ${record["longitude"]}"),
                                 SizedBox(height: 5),
@@ -241,103 +331,3 @@ class _MyRecordPageState extends State<MyRecordPage> {
     );
   }
 }
-
-// class AttendanceChartWidget extends StatelessWidget {
-//   final Map<String, Map<String, int>> attendanceSummary;
-//   final bool isDarkMode;
-
-//   const AttendanceChartWidget({
-//     required this.attendanceSummary,
-//     required this.isDarkMode,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     List<String> days = attendanceSummary.keys.toList();
-
-//     return Card(
-//       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-//       elevation: 5,
-//       color: isDarkMode ? Colors.grey[900] : Colors.white,
-//       child: Padding(
-//         padding: const EdgeInsets.all(20.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text(
-//               "Attendance Overview",
-//               style: TextStyle(
-//                 fontSize: 18,
-//                 fontWeight: FontWeight.bold,
-//                 color: isDarkMode ? Colors.white : Colors.black,
-//               ),
-//             ),
-//             SizedBox(height: 20),
-//             AspectRatio(
-//               aspectRatio: 1.7,
-//               child: BarChart(
-//                 BarChartData(
-//                   backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
-//                   gridData: FlGridData(show: false),
-//                   borderData: FlBorderData(show: false),
-//                   titlesData: FlTitlesData(
-//                     bottomTitles: AxisTitles(
-//                       sideTitles: SideTitles(
-//                         showTitles: true,
-//                         getTitlesWidget: (value, meta) {
-//                           if (value.toInt() < days.length) {
-//                             return Text(
-//                               days[value.toInt()].substring(0, 3),
-//                               style: TextStyle(
-//                                 color: isDarkMode ? Colors.white70 : Colors.black87,
-//                                 fontSize: 10,
-//                               ),
-//                             );
-//                           }
-//                           return Text('');
-//                         },
-//                       ),
-//                     ),
-//                     leftTitles: AxisTitles(
-//                       sideTitles: SideTitles(showTitles: false),
-//                     ),
-//                     topTitles: AxisTitles(
-//                       sideTitles: SideTitles(showTitles: false),
-//                     ),
-//                     rightTitles: AxisTitles(
-//                       sideTitles: SideTitles(showTitles: false),
-//                     ),
-//                   ),
-//                   barGroups: days.asMap().entries.map((entry) {
-//                     int index = entry.key;
-//                     String day = entry.value;
-//                     final summary = attendanceSummary[day]!;
-
-//                     return BarChartGroupData(x: index, barRods: [
-//                       BarChartRodData(
-//                         toY: summary['OnTime']?.toDouble() ?? 0,
-//                         color: Colors.green,
-//                         width: 6,
-//                       ),
-//                       BarChartRodData(
-//                         toY: summary['Late']?.toDouble() ?? 0,
-//                         color: Colors.orange,
-//                         width: 6,
-//                       ),
-//                       BarChartRodData(
-//                         toY: summary['EarlyDeparture']?.toDouble() ?? 0,
-//                         color: Colors.red,
-//                         width: 6,
-//                       ),
-//                     ]);
-//                   }).toList(),
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
