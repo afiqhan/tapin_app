@@ -252,75 +252,99 @@ class _MyRecordPageState extends State<MyRecordPage> {
                           margin: EdgeInsets.only(bottom: 10),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
-                          child: ListTile(
-                            contentPadding: EdgeInsets.all(15),
-                            leading: Icon(
-                              record["type"] == "Check-In"
-                                  ? Icons.login
-                                  : record["type"] == "Check-Out"
-                                      ? Icons.logout
-                                      : Icons.coffee,
-                              size: 30,
-                              color: record["type"] == "Check-In"
-                                  ? Colors.green
-                                  : record["type"] == "Check-Out"
-                                      ? Colors.red
-                                      : Colors.orange,
-                            ),
-                            title: Text(record["date"] ?? "-",
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if ((record["status"] == "Late") &&
-                                    (record["remark"] == null ||
-                                        record["remark"]!.isEmpty))
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: TextButton.icon(
-                                      icon: Icon(Icons.edit,
-                                          size: 18, color: Colors.purple),
-                                      label: Text("Tambah Sebab Lewat",
-                                          style:
-                                              TextStyle(color: Colors.purple)),
-                                      onPressed: () {
-                                        _showRemarkDialog(
-                                            record["key"]!, record["date"]!);
-                                      },
-                                    ),
-                                  ),
-                                Text("Latitude: ${record["latitude"]}"),
-                                Text("Longitude: ${record["longitude"]}"),
-                                SizedBox(height: 5),
-                                Row(
-                                  children: [
-                                    Chip(
-                                      label: Text(record["type"] ?? "Unknown"),
-                                      backgroundColor:
-                                          record["type"] == "Check-In"
-                                              ? Colors.green[100]
-                                              : record["type"] == "Check-Out"
-                                                  ? Colors.red[100]
-                                                  : Colors.orange[100],
-                                    ),
-                                    SizedBox(width: 8),
-                                    if (record["status"] != null)
-                                      Chip(
-                                        label: Text(record["status"] ?? ""),
-                                        backgroundColor:
-                                            record["status"] == "Late"
-                                                ? Colors.orange[200]
-                                                : record["status"] ==
-                                                        "Early Departure"
-                                                    ? Colors.red[200]
-                                                    : Colors.green[200],
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                          child: record["type"] == "Check-Out"
+  ? ExpansionTile(
+      tilePadding: EdgeInsets.all(15),
+      leading: Icon(Icons.logout, size: 30, color: Colors.red),
+      title: Text(
+        record["date"] ?? "-",
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Latitude: ${record["latitude"]}"),
+          Text("Longitude: ${record["longitude"]}"),
+          SizedBox(height: 5),
+          Row(
+            children: [
+              Chip(label: Text("Check-Out"), backgroundColor: Colors.red[100]),
+              SizedBox(width: 8),
+              Chip(
+                label: Text(record["status"] ?? ""),
+                backgroundColor: Colors.green[200],
+              ),
+            ],
+          ),
+        ],
+      ),
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Divider(),
+              Row(
+                children: [
+                  Icon(Icons.timer_outlined, size: 18, color: Colors.grey[700]),
+                  SizedBox(width: 8),
+                  Text("Working Hours: ${record["working_hours"] ?? '-'}"),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.straighten, size: 18, color: Colors.grey[700]),
+                  SizedBox(width: 8),
+                  Text("Distance: ${record["distance"] ?? '-'}"),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    )
+  : ListTile(
+      contentPadding: EdgeInsets.all(15),
+      leading: Icon(Icons.login, size: 30, color: Colors.green),
+      title: Text(
+        record["date"] ?? "-",
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if ((record["status"] == "Late") &&
+              (record["remark"] == null || record["remark"]!.isEmpty))
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: TextButton.icon(
+                icon: Icon(Icons.edit, size: 18, color: Colors.purple),
+                label: Text("Tambah Sebab Lewat",
+                    style: TextStyle(color: Colors.purple)),
+                onPressed: () {
+                  _showRemarkDialog(record["key"]!, record["date"]!);
+                },
+              ),
+            ),
+          Text("Latitude: ${record["latitude"]}"),
+          Text("Longitude: ${record["longitude"]}"),
+          SizedBox(height: 5),
+          Row(
+            children: [
+              Chip(label: Text("Check-In"), backgroundColor: Colors.green[100]),
+              SizedBox(width: 8),
+              Chip(
+                label: Text(record["status"] ?? ""),
+                backgroundColor: Colors.orange[200],
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+
                         );
                       },
                     ),

@@ -65,7 +65,7 @@ class DefaultFirebaseOptions {
     appId: '1:733701309308:ios:0e7956ccd015ecc1221af9',
     messagingSenderId: '733701309308',
     projectId: 'tapin-e798d',
-    databaseURL: 'https://tapin-e798d-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL: 'https://tapin-e798d-default-rtdb.asia-southeast1.fire asedatabase.app',
     storageBucket: 'tapin-e798d.firebasestorage.app',
     iosBundleId: 'com.example.tapinApp',
   );
