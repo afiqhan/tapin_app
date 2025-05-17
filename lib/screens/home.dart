@@ -13,6 +13,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:lottie/lottie.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -61,6 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -70,16 +74,16 @@ class _HomePageState extends State<HomePage> {
   String _currentTime = "";
   String _userName = "Employee";
   Timer? _timer;
-  Stopwatch _stopwatch = Stopwatch();
+  final Stopwatch _stopwatch = Stopwatch();
   Timer? _trackingTimer;
   Duration _elapsed = Duration.zero;
   bool _isPaused = false;
   bool _isCheckedIn = false;
   final DatabaseReference _db = FirebaseDatabase.instance.ref("attendance");
-  List<Position> _positions = [];
+  final List<Position> _positions = [];
   double _totalDistance = 0.0;
   GoogleMapController? _mapController;
-  List<LatLng> _polylineCoordinates = [];
+  final List<LatLng> _polylineCoordinates = [];
   final Set<Polyline> _polylines = {};
 
   @override
@@ -317,9 +321,9 @@ Future<void> checkLocationPermission() async {
       "longitude": longitude,
       "status": status,
       "working_hours":
-          type == "Check-Out" ? _elapsed.inMinutes.toString() + " mins" : "",
+          type == "Check-Out" ? "${_elapsed.inMinutes} mins" : "",
       "distance": type == "Check-Out"
-          ? (_totalDistance / 1000).toStringAsFixed(2) + " km"
+          ? "${(_totalDistance / 1000).toStringAsFixed(2)} km"
           : "",
     });
 
@@ -629,6 +633,13 @@ Future<void> checkLocationPermission() async {
         Expanded(
           child: ElevatedButton(
             onPressed: _pauseTracking,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              textStyle: TextStyle(color: Colors.white),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -641,19 +652,18 @@ Future<void> checkLocationPermission() async {
                 SizedBox(width: 8),
               ],
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              textStyle: TextStyle(color: Colors.white),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
           ),
         ),
         SizedBox(width: 10),
         Expanded(
           child: ElevatedButton(
             onPressed: _resumeTracking,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -664,12 +674,6 @@ Future<void> checkLocationPermission() async {
                 Icon(Icons.play_arrow, color: Colors.white), // Ikon resume
                 SizedBox(width: 8), // Jarak antara ikon dan teks
               ],
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
             ),
           ),
         ),
