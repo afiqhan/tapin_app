@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'home.dart';
 import 'login.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -26,14 +27,14 @@ class _SignUpPageState extends State<SignUpPage> {
         _phoneController.text.isEmpty ||
         _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Sila isi semua maklumat!")),
+        SnackBar(content: Text("Please fill in all the information!")),
       );
       return;
     }
 
     if (!_emailController.text.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Sila masukkan email yang sah!")),
+        SnackBar(content: Text("Please enter a valid email!")),
       );
       return;
     }
@@ -41,14 +42,14 @@ class _SignUpPageState extends State<SignUpPage> {
     if (_phoneController.text.length < 10 ||
         _phoneController.text.length > 11) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Sila masukkan nombor telefon yang sah!")),
+        SnackBar(content: Text("Please enter a valid phone number!")),
       );
       return;
     }
 
     if (_passwordController.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Kata laluan mesti lebih daripada 6 aksara!")),
+        SnackBar(content: Text("Password must be at least 6 characters!")),
       );
       return;
     }
@@ -76,8 +77,7 @@ class _SignUpPageState extends State<SignUpPage> {
           "Data saved to Firebase Database!"); // Debugging untuk pastikan data masuk
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text("Pendaftaran Berjaya! Anda akan dialihkan ke Home.")),
+        SnackBar(content: Text("Registration Successful!")),
       );
 
       // **Terus Login & Pergi ke HomeScreen**
@@ -88,7 +88,7 @@ class _SignUpPageState extends State<SignUpPage> {
     } catch (e) {
       print("Error: $e"); // Debugging untuk lihat masalah
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Pendaftaran Gagal: ${e.toString()}")),
+        SnackBar(content: Text("Registration failed: ${e.toString()}")),
       );
     }
   }
@@ -112,13 +112,22 @@ class _SignUpPageState extends State<SignUpPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
-                    child: Text(
-                      "Sign Up to TapIn",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue[900],
-                      ),
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          'assets/images/tapin_logo.png',
+                          height: 60,
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          "Sign Up to TapIn",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[900],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 20),
@@ -157,6 +166,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       child: Text("Register", style: TextStyle(fontSize: 16)),
                     ),
                   ),
+                  SizedBox(height: 10),
                   SizedBox(height: 15),
                   Center(
                     child: GestureDetector(

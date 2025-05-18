@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tapin_app/screens/about_tapin_page.dart';
 import 'login.dart';
 import 'edit_profile.dart';
 import '../chart/attendance_chart_page.dart';
@@ -134,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage>
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Gambar profil berjaya dikemaskini!")),
+            SnackBar(content: Text("Profile picture updated successfully!")),
           );
         }
       } catch (e) {
@@ -142,7 +143,7 @@ class _ProfilePageState extends State<ProfilePage>
           _isUploading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Ralat semasa upload: $e")),
+          SnackBar(content: Text("Error during upload: $e")),
         );
       }
     }
@@ -153,14 +154,14 @@ class _ProfilePageState extends State<ProfilePage>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Log Keluar"),
-        content: Text("Adakah anda pasti mahu log keluar?"),
+        title: Text("Log Out"),
+        content: Text("Are you sure you want to log out?"),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Tutup dialog
             },
-            child: Text("Batal"),
+            child: Text("Cancel"),
           ),
           TextButton(
             onPressed: () async {
@@ -172,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage>
               );
             },
             child: Text(
-              "Log Keluar",
+              "Log Out",
               style: TextStyle(color: Colors.red),
             ),
           ),
@@ -306,49 +307,61 @@ class _ProfilePageState extends State<ProfilePage>
             SizedBox(height: 20),
             Divider(),
             ListTile(
-              leading: Icon(Icons.bar_chart, color: Colors.blue[900]),
-              title:
-                  Text("Attendance Chart", style: TextStyle(color: textColor)),
-              trailing: Icon(Icons.arrow_forward_ios,
-                  size: 16, color: secondaryTextColor),
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => AttendanceChartPage())),
-            ),
-            ListTile(
-              leading: Icon(Icons.dark_mode, color: Colors.blue[900]),
-              title: Text("Dark Mode", style: TextStyle(color: textColor)),
-              trailing: Switch(
-                value: _isDarkMode,
-                onChanged: _toggleDarkMode,
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.language, color: Colors.blue[900]),
-              title: Text("Language",
-                  style: TextStyle(
-                    color: _isDarkMode
-                        ? Colors.white
-                        : Colors.black, // <-- Tambah style di sini
-                  )),
-              trailing: DropdownButton<String>(
-                value: _selectedLanguage,
-                dropdownColor: _isDarkMode
-                    ? Colors.black
-                    : Colors.white, // <-- Ini tukar warna background dropdown
-                style: TextStyle(
-                  color: _isDarkMode
-                      ? Colors.white
-                      : Colors.black, // <-- Ini tukar warna tulisan dropdown
-                ),
-                items: ["English", "Bahasa Melayu"]
-                    .map((lang) => DropdownMenuItem(
-                          value: lang,
-                          child: Text(lang),
-                        ))
-                    .toList(),
-                onChanged: _changeLanguage,
-              ),
-            ),
+  leading: Icon(Icons.bar_chart, color: Colors.blue[900]),
+  title: Text("Attendance Chart", style: TextStyle(color: textColor)),
+  trailing: Icon(Icons.arrow_forward_ios, size: 16, color: secondaryTextColor),
+  onTap: () => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => AttendanceChartPage()),
+  ),
+),
+
+ListTile(
+  leading: Icon(Icons.dark_mode, color: Colors.blue[900]),
+  title: Text("Dark Mode", style: TextStyle(color: textColor)),
+  trailing: Switch(
+    value: _isDarkMode,
+    onChanged: _toggleDarkMode,
+  ),
+),
+
+ListTile(
+  leading: Icon(Icons.language, color: Colors.blue[900]),
+  title: Text("Language",
+      style: TextStyle(
+        color: _isDarkMode ? Colors.white : Colors.black,
+      )),
+  trailing: DropdownButton<String>(
+    value: _selectedLanguage,
+    dropdownColor: _isDarkMode ? Colors.black : Colors.white,
+    style: TextStyle(
+      color: _isDarkMode ? Colors.white : Colors.black,
+    ),
+    items: ["English", "Bahasa Melayu"]
+        .map((lang) => DropdownMenuItem(
+              value: lang,
+              child: Text(lang),
+            ))
+        .toList(),
+    onChanged: _changeLanguage,
+  ),
+),
+
+// ✅ Butang About TapIn di bawah sekali
+ListTile(
+  leading: Icon(Icons.info_outline, color: Colors.blue[900]),
+  title: Text("About TapIn", style: TextStyle(color: textColor)),
+  trailing: Icon(Icons.arrow_forward_ios, size: 16, color: secondaryTextColor),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AboutTapInPage(isDarkMode: _isDarkMode),
+      ),
+    );
+  },
+),
+
           ],
         ),
       ),

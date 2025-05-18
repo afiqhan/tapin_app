@@ -79,6 +79,7 @@ class _HomePageState extends State<HomePage> {
   Duration _elapsed = Duration.zero;
   bool _isPaused = false;
   bool _isCheckedIn = false;
+  bool _hasRequestedPermission = false;
   final DatabaseReference _db = FirebaseDatabase.instance.ref("attendance");
   final List<Position> _positions = [];
   double _totalDistance = 0.0;
@@ -94,46 +95,60 @@ class _HomePageState extends State<HomePage> {
     _fetchUserName();
     _loadCheckInStatus();
 
-    checkLocationPermission(); // Check location permission on startup
-
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
-      _updateTime();
-    });
+    if (!_hasRequestedPermission) {
+    checkLocationPermission();
+    _hasRequestedPermission = true;
   }
 
+  _timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+    _updateTime();
+  });
+}
 
 Future<void> checkLocationPermission() async {
   PermissionStatus status = await Permission.location.status;
 
-  if (status.isDenied || status.isPermanentlyDenied) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Location Permission Required 📍"),
-        content: Text(
-          "Please allow location access in your device settings to use the tracking feature in this app.",
+  if (status.isGranted) {
+    return; // ✅ Jika sudah diberi, keluar awal
+  }
+
+  if (status.isDenied) {
+    final newStatus = await Permission.location.request();
+    if (newStatus.isGranted) {
+      return;
+    }
+  }
+
+  if (status.isPermanentlyDenied) {
+    // ❗Popup hanya sekali dan tidak dipanggil semula secara automatik
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Location Permission Required 📍"),
+          content: Text(
+            "Please enable location access in your device settings to continue.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                openAppSettings(); // Pergi ke Settings
+                Navigator.pop(context);
+              },
+              child: Text("Go to Settings"),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              openAppSettings(); // Buka settings terus
-              Navigator.pop(context);
-            },
-            child: Text("Go to Settings"),
-          ),
-        ],
-      ),
-    );
-  } else if (status.isDenied) {
-    await Permission.location.request(); // Minta kebenaran sekali lagi
+      );
+    });
   }
 }
+
+
 
   @override
   void dispose() {
@@ -223,7 +238,7 @@ Future<void> checkLocationPermission() async {
 
   void _resumeTracking() async {
     bool confirm = await _showConfirmationDialog(
-        "Sambung Tracking", "Anda pasti mahu sambung semula tracking?");
+        "Resume Tracking", "Are you sure you want to resume tracking?");
     if (confirm) {
       setState(() {
         _isPaused = false;
@@ -346,11 +361,11 @@ Future<void> checkLocationPermission() async {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text("Check-In Berjaya ✅"),
+          title: Text("Check-In Successful ✅"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("$type berjaya pada $_currentTime"),
+              Text("$type successful at $_currentTime"),
               SizedBox(height: 12),
               Text(
                 motivationalMessages.first,
@@ -361,7 +376,7 @@ Future<void> checkLocationPermission() async {
           ),
           actions: [
             TextButton(
-              child: Text("Tutup"),
+              child: Text("Close"),
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -372,23 +387,23 @@ Future<void> checkLocationPermission() async {
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text("Check-Out Berjaya ✅"),
+            title: Text("Check-Out Successful ✅"),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Anda telah berjaya check-out pada $_currentTime."),
+                Text("You have successfully checked out at $_currentTime."),
                 SizedBox(height: 10),
-                Text("Rekod masa: ${_elapsed.inMinutes} minit"),
+                Text("Elapsed: ${_elapsed.inMinutes} minutes"),
                 Text(
-                    "Jarak perjalanan: ${(_totalDistance / 1000).toStringAsFixed(2)} km"),
+                    "Distance: ${(_totalDistance / 1000).toStringAsFixed(2)} km"),
                 SizedBox(height: 10),
-                Text("Terima kasih atas usaha hari ini! 💼"),
+                Text("Thank you for your hard work today!💼"),
               ],
             ),
             actions: [
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("Tutup"),
+                child: Text("Close"),
               ),
             ],
           ),
@@ -582,50 +597,69 @@ Future<void> checkLocationPermission() async {
     );
   }
 
-  Widget _buildCheckOutButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 55,
-      child: ElevatedButton.icon(
-        onPressed: () async {
-          bool confirm = await showDialog(
+ Widget _buildCheckOutButton() {
+  return SizedBox(
+    width: double.infinity,
+    height: 55,
+    child: ElevatedButton.icon(
+      onPressed: () async {
+        if (!_isCheckedIn) {
+          // ❗Jika belum check-in, paparkan mesej
+          showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text("Confirm Check-Out"),
-              content: Text(
-                  "Confirm check-out? Your work session will end at this time!"),
+              title: Text("Check-In Required"),
+              content: Text("You must check-in first before checking out."),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text("Cancel"),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text("Confirm"),
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("OK"),
                 ),
               ],
             ),
           );
+          return; // ⛔ Hentikan proses
+        }
 
-          if (confirm) {
-            _handleCheckInOut("Check-Out");
-          }
-        },
-        icon: Icon(Icons.exit_to_app, size: 24, color: Colors.white),
-        label: Text(
-          "Check-Out",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red,
-          foregroundColor: Colors.white,
-          elevation: 8,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
+        // ✅ Jika sudah check-in, proceed seperti biasa
+        bool confirm = await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Confirm Check-Out"),
+            content: Text(
+                "Confirm check-out? Your work session will end at this time!"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text("Confirm"),
+              ),
+            ],
+          ),
+        );
+
+        if (confirm) {
+          _handleCheckInOut("Check-Out");
+        }
+      },
+      icon: Icon(Icons.exit_to_app, size: 24, color: Colors.white),
+      label: Text(
+        "Check-Out",
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
-    );
-  }
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+  );
+}
+
 
   Widget _buildPauseResumeButtons() {
     return Row(

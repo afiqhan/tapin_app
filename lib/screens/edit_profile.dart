@@ -97,13 +97,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     Icon(Icons.check_circle, color: Colors.green, size: 60),
                     SizedBox(height: 15),
                     Text(
-                      'Profil Dikemaskini',
+                      'Profile Updated',
                       style: TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 10),
                     Text(
-                      'Maklumat anda telah disimpan dengan berjaya.',
+                      'Your profile has been successfully updated.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
@@ -119,7 +119,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: Text('OK'),
+                      child: Text(
+                        'OK',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -134,8 +140,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Ralat'),
-            content: Text('Gagal kemas kini profil: $e'),
+            title: Text('Error'),
+            content: Text('Error update profile: $e'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
